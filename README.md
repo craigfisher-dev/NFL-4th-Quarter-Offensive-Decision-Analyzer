@@ -2,7 +2,7 @@
 
 **Live App**: [Coming Soon - Deploy URL Here]
 
-Evaluates NFL team decision-making in critical 4th quarter situations based on game context, time remaining, and score differential. Analyzes whether teams make optimal play-calling choices when protecting leads versus needing to score quickly. Built with Python, Streamlit, nfl_data_py, and hosted on Render.
+Evaluates NFL team decision-making in critical 4th quarter situations based on game context, time remaining, and score differential. Analyzes whether teams make optimal play-calling choices when protecting leads versus needing to score quickly. Built with Python, Streamlit, nflreadpy, and hosted on Render.
 
 ## Features
 - Team-specific 4th quarter decision analysis
