@@ -14,6 +14,15 @@ from concurrent.futures import ThreadPoolExecutor
 
 load_dotenv() # Loads values from env file
 
+url = os.environ.get("SUPABASE_URL")
+key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+supabase = create_client(url, key)
+
+
+# Quick check to see if can connect to Supabase database
+response = supabase.table('Teams').select("*").execute()
+
+print(response)
 
 
 player_rankings = nfl.load_ff_rankings("week")
