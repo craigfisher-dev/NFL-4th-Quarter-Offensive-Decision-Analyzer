@@ -10,6 +10,14 @@ from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor
 
 
+pbp_data = nfl.load_pbp(
+  seasons = nfl.get_current_season(),
+)
+
+print(type(pbp_data))
+
+# All play_by_play_data for all teams and games up to the current date in the current season
+pbp_data.write_csv('play_by_play_data.csv')
 
 
 load_dotenv() # Loads values from env file
