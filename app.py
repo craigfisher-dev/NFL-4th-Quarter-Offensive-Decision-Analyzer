@@ -9,9 +9,10 @@ from supabase import create_client
 from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor
 
+current_season = nfl.get_current_season()
 
 pbp_data = nfl.load_pbp(
-  seasons = nfl.get_current_season(),
+  seasons = current_season
 )
 
 print(type(pbp_data))
@@ -40,7 +41,6 @@ current_season = nfl.get_current_season()
 current_week = nfl.get_current_week()
 
 print(f"It is the {current_season} season and its week {current_week}")
-
 
 # Outputs file to new CV file
 player_rankings.write_csv('player_rankings.csv')
