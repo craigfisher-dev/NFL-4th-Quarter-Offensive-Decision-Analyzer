@@ -1,13 +1,14 @@
-# NFL 4th Quarter Time Management Analyzer
+# NFL 4th Quarter Offensive Decision Analyzer
 
 **Live App**: [Coming Soon - Deploy URL Here]
 
-Tells NFL offensive coordinators the exact decision they SHOULD make in any 4th quarter situation to maximize win probability. Analyzes game context (score, time, field position) and recommends RUN, PASS, PUNT, FIELD GOAL, EXTRA POINT, or GO FOR 2 with clear explanations of clock impact and strategic reasoning. Focuses exclusively on offensive decision-making. Built with Python, Streamlit, nflreadpy, Supabase, and hosted on Render.
+Tells NFL offenses the exact decision they SHOULD make in any 4th quarter situation to maximize win probability. Analyzes game context (score, time, field position) and recommends RUN, PASS, PUNT, FIELD GOAL, EXTRA POINT, or GO FOR 2 with clear explanations of clock impact and strategic reasoning. Built with Python, Streamlit, nflreadpy, Supabase, and hosted on Render.
 
 
-**Core Philosophy**: When leading, kill clock with smart decisions. When trailing, preserve time and score quickly.
-
-
+**Core Philosophy**: 
+- **When leading**: Kill the clock with smart decisions
+- **When trailing by one score**: Control the clock and score methodically while denying your opponent time to answer back
+- **When trailing by multiple scores**: Maximize possessions by getting plays off quickly and scoring fast to create multiple comeback opportunities
 
 ## Features
 
@@ -20,7 +21,15 @@ Tells NFL offensive coordinators the exact decision they SHOULD make in any 4th 
 ### Decision Analysis (Live / Complete Games)
 - **Six decision types** - RUN, PASS, PUNT, FIELD GOAL, EXTRA POINT, GO FOR 2
 - **Optimal play recommendations** - AI-driven suggestions for the best decision in each moment
-- **Clock management analysis** - Precise calculations of time burned or saved by each decision type
+- **Clock management analysis**
+  - Tracks actual time consumed by completed plays
+  - Calculates maximum clock burn for runs (staying inbounds, running clock down between plays)
+  - Analyzes strategic clock plays: kneel downs to burn time, spikes to stop clock
+  - Analyzes clock impact of passes (incompletions stop clock, inbounds catches burn clock)
+  - Evaluates strategic choices: staying inbounds vs going out of bounds
+  - Shows time consumed by punts, field goal attempts, and kickoffs (normal and onside)
+  - Notes PAT and 2PT conversion attempts (no clock impact)
+  - Identifies all clock events (timeouts, penalties, two-minute warning)
 - **Strategic explanations** - Clear, detailed reasoning for every recommendation with situational context
 
 ### Historical Analysis (Complete Game)
