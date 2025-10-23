@@ -12,7 +12,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 
 # Most useful column from massive live play_by_play dataset
-# Cuts down from 300+ to 37
+# Cuts down from 300+ to 38
 keep_cols = [
     # Identifiers (2)
     'play_id',        # Unique ID for each play (needed for timeline clicks)   (Type in database: float4)
@@ -24,6 +24,7 @@ keep_cols = [
     'week',           # Week number (1-18) (Type in database: int2)
     'season',         # Year (e.g., 2024) (Type in database: int2)
     'game_date',      # Date of game (Type in database: date)
+    'start_time',     # Actual game kickoff time (for sorting games by time slot) (Type in database: timestamptz)
     
     # Situation (11)
     'qtr',            # Quarter (filter to 4 for 4th quarter only) (Type in database: float4)
@@ -83,9 +84,21 @@ print(f"Original data: {df.shape[0]} rows, {df.shape[1]} columns")
 
 # Filter to 4th quarter only AND keep only selected columns
 print("Filtering to 4th quarter and selected columns...")
-df_filtered = df[df['qtr'] == 4][keep_cols]
+df_filtered = df[df['qtr'] == 4][keep_cols].copy()
 
 print(f"Filtered data: {df_filtered.shape[0]} rows, {df_filtered.shape[1]} columns")
+
+# Convert start_time to proper datetime format
+print("Converting start_time to datetime format...")
+df_filtered['start_time'] = pd.to_datetime(df_filtered['start_time'], errors='coerce')
+
+print("Sorting data chronologically...")
+df_filtered = df_filtered.sort_values(
+    by=['game_date', 'start_time', 'game_id', 'game_seconds_remaining'],
+    ascending=[True, True, True, False]  # False for game_seconds because it counts DOWN
+).reset_index(drop=True)
+
+
 
 # Save the filtered CSV
 df_filtered.to_csv('pbp_4th_quarter_clean.csv', index=False)
@@ -98,15 +111,45 @@ url = os.environ.get("SUPABASE_URL")
 key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 supabase = create_client(url, key)
 
+# Upload data to Supabase
+print("\nUploading data to Supabase...")
 
-# Quick check to see if can connect to Supabase database
-response = supabase.table('Teams').select("*").execute()
 
-print(response)
+# Convert DataFrame to list of dictionaries
+plays = df_filtered.to_dict('records')
+
+
+# Handle NaN/None values and convert datetime to ISO string for Supabase
+for play in plays:
+    # Go through each column in this play (38 total columns)
+    # Makes a copy with list() so we can safely change values while looping
+    for column_name, column_value in list(play.items()):
+        
+        # If the value is missing (NaN), change it to None for the database
+        if pd.isna(column_value):
+            play[column_name] = None
+        # If the value is a datetime, convert it to a text string
+        elif isinstance(column_value, pd.Timestamp):
+            play[column_name] = column_value.isoformat()  # Convert datetime to ISO string
+
+
+# Upload in batches using upsert (Supabase recommend 1000 rows per batches)
+batch_size = 1000
+total_records = len(plays)
+
+for i in range(0, total_records, batch_size):
+    # Get the next 1000 plays
+    batch = plays[i:i + batch_size]
+
+    # Try to upload this batch
+    try:
+        response = supabase.table('play_by_play').upsert(batch, on_conflict='game_id,play_id').execute()
+        print(f"✅ Uploaded batch {i//batch_size + 1}: {len(batch)} records")
+    except Exception as e:
+        print(f"❌ Error uploading batch {i//batch_size + 1}: {e}")
+
+print(f"\n✅ Finished uploading {total_records} records to Supabase")
 
 current_season = nfl.get_current_season()
-
 current_week = nfl.get_current_week()
-
-print(f"It is the {current_season} season and its week {current_week}")
-
+print(f"\nIt is the {current_season} season and its week {current_week}")
