@@ -136,6 +136,7 @@ for play in plays:
 # Upload in batches using upsert (Supabase recommend 1000 rows per batches)
 batch_size = 1000
 total_records = len(plays)
+batch_number = 1
 
 for i in range(0, total_records, batch_size):
     # Get the next 1000 plays
@@ -144,11 +145,21 @@ for i in range(0, total_records, batch_size):
     # Try to upload this batch
     try:
         response = supabase.table('play_by_play').upsert(batch, on_conflict='game_id,play_id').execute()
-        print(f"✅ Uploaded batch {i//batch_size + 1}: {len(batch)} records")
+        print(f"✅ Uploaded batch {batch_number}: {len(batch)} records")
     except Exception as e:
-        print(f"❌ Error uploading batch {i//batch_size + 1}: {e}")
+        print(f"❌ Error uploading batch {batch_number}: {e}")
+    batch_number += 1
 
 print(f"\n✅ Finished uploading {total_records} records to Supabase")
+
+
+# No need to worry about id size getting big becuase an int8 is about 9,000,000,000,000,000,000
+# So if it auto increments by about 35000 everytime it updates (Which will be a few times per day)
+# It will take a really long time to reach unwanted behavior :D 
+
+# Testing data upserting a single row after big batch upsert 
+# response = supabase.table('play_by_play').upsert(({'game_id': '99999999999989', 'play_id': '9999999979999999'}), on_conflict='game_id,play_id').execute()
+
 
 current_season = nfl.get_current_season()
 current_week = nfl.get_current_week()
