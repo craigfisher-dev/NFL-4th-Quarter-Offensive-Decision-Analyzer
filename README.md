@@ -19,7 +19,7 @@ Tells NFL offenses the exact decision they SHOULD make in any 4th quarter situat
 - **4th quarter timeline** - Scrub through every play (show play-by-play on side user can click on it to jump to any play) in the 4th quarter with instant situation updates
 
 ### Decision Analysis (Live / Complete Games)
-- **Six decision types** - RUN, PASS, PUNT, FIELD GOAL, EXTRA POINT, GO FOR 2
+- **Seven decision types** - RUN, PASS, PUNT, FIELD GOAL, EXTRA POINT, GO FOR 2, Kickoff (On-side and Normal)
 - **Optimal play recommendations** - AI-driven suggestions for the best decision in each moment
 - **Clock management analysis**
   - Tracks actual time consumed by completed plays
