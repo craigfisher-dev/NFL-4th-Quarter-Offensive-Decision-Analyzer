@@ -3,6 +3,8 @@ import time
 import os
 import logging
 import warnings
+import requests
+import json
 
 import pandas as pd
 import nflreadpy as nfl
@@ -10,6 +12,8 @@ from supabase import create_client
 from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor
 
+
+ESPN_LOGO_TEAMS_URL = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams"
 
 # Most useful column from massive live play_by_play dataset
 # Cuts down from 300+ to 38
@@ -164,3 +168,31 @@ print(f"\n✅ Finished uploading {total_records} records to Supabase")
 current_season = nfl.get_current_season()
 current_week = nfl.get_current_week()
 print(f"\nIt is the {current_season} season and its week {current_week}")
+
+
+
+# Cache for 24 hours
+@st.cache_data(ttl=86400)
+def get_nfl_team_logos():
+    # Fetch ESPN DATA
+    response = requests.get(ESPN_LOGO_TEAMS_URL, timeout=10)
+    # Convert to JSON
+    data = response.json()
+
+    # To see structure of API resposnse
+    # with open("ESPN_LOGO_TEAMS.json", "w") as f:
+    #     json.dump(data, f, indent=2)
+
+    # Navigate to teams
+    teams = data["sports"][0]["leagues"][0]["teams"]
+    
+    nfl_logos = {}
+
+    # Loop and extract
+    for team in teams:
+        team_abbreviation = team["team"]["abbreviation"]
+        nfl_logos[team_abbreviation] = team["team"]["logos"][0]["href"]
+
+    return nfl_logos
+
+print(get_nfl_team_logos())
