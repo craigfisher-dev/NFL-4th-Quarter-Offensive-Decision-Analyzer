@@ -12,6 +12,17 @@ from supabase import create_client
 from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor
 
+st.set_page_config("NFL 4th Quarter Offensive Decision Analyzer")
+
+logging.basicConfig (
+    level=logging.INFO,
+    format='%(asctime)s - %(message)s'
+)
+
+# Suppress Long HTTP logs (set DEBUG_HTTP=true in .env to see all HTTP logs)
+if not os.getenv("DEBUG_HTTP"):
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 ESPN_LOGO_TEAMS_URL = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams"
 
@@ -79,24 +90,20 @@ pbp_data = nfl.load_pbp(
   seasons = current_season
 )
 
-print(type(pbp_data))
-
 # Convert from polars to pandas
 df = pbp_data.to_pandas()
 
-print(f"Original data: {df.shape[0]} rows, {df.shape[1]} columns")
-
 # Filter to 4th quarter only AND keep only selected columns
-print("Filtering to 4th quarter and selected columns...")
+logging.info("Filtering to 4th quarter and selected columns...")
 df_filtered = df[df['qtr'] == 4][keep_cols].copy()
 
-print(f"Filtered data: {df_filtered.shape[0]} rows, {df_filtered.shape[1]} columns")
+logging.info(f"Filtered data: {df_filtered.shape[0]} rows, {df_filtered.shape[1]} columns")
 
 # Convert start_time to proper datetime format
-print("Converting start_time to datetime format...")
+logging.info("Converting start_time to datetime format...")
 df_filtered['start_time'] = pd.to_datetime(df_filtered['start_time'], errors='coerce')
 
-print("Sorting data chronologically...")
+logging.info("Sorting data chronologically...")
 df_filtered = df_filtered.sort_values(
     by=['game_date', 'start_time', 'game_id', 'game_seconds_remaining'],
     ascending=[True, True, True, False]  # False for game_seconds because it counts DOWN
@@ -106,7 +113,7 @@ df_filtered = df_filtered.sort_values(
 
 # Save the filtered CSV
 df_filtered.to_csv('pbp_4th_quarter_clean.csv', index=False)
-print("✅ Saved filtered data to pbp_4th_quarter_clean.csv")
+logging.info("✅ Saved filtered data to pbp_4th_quarter_clean.csv")
 
 
 load_dotenv() # Loads values from env file
@@ -116,7 +123,7 @@ key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 supabase = create_client(url, key)
 
 # Upload data to Supabase
-print("\nUploading data to Supabase...")
+logging.info("\nUploading data to Supabase...")
 
 
 # Convert DataFrame to list of dictionaries
@@ -149,12 +156,12 @@ for i in range(0, total_records, batch_size):
     # Try to upload this batch
     try:
         response = supabase.table('play_by_play').upsert(batch, on_conflict='game_id,play_id').execute()
-        print(f"✅ Uploaded batch {batch_number}: {len(batch)} records")
+        logging.info(f"✅ Uploaded batch {batch_number}: {len(batch)} records")
     except Exception as e:
-        print(f"❌ Error uploading batch {batch_number}: {e}")
+        logging.error(f"❌ Error uploading batch {batch_number}: {e}")
     batch_number += 1
 
-print(f"\n✅ Finished uploading {total_records} records to Supabase")
+logging.info(f"\n✅ Finished uploading {total_records} records to Supabase")
 
 
 # No need to worry about id size getting big becuase an int8 is about 9,000,000,000,000,000,000
@@ -167,7 +174,7 @@ print(f"\n✅ Finished uploading {total_records} records to Supabase")
 
 current_season = nfl.get_current_season()
 current_week = nfl.get_current_week()
-print(f"\nIt is the {current_season} season and its week {current_week}")
+logging.info(f"\nIt is the {current_season} season and its week {current_week}")
 
 
 
@@ -195,4 +202,4 @@ def get_nfl_team_logos():
 
     return nfl_logos
 
-print(get_nfl_team_logos())
+logging.info(get_nfl_team_logos())
