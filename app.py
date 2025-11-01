@@ -202,4 +202,19 @@ def get_nfl_team_logos():
 
     return nfl_logos
 
-logging.info(get_nfl_team_logos())
+# logging.info(get_nfl_team_logos())
+
+
+# Fetch all the games current week
+
+schedule = nfl.load_schedules(current_season)
+
+df_schedule = schedule.to_pandas()
+
+df_schedule.to_csv('nfl_schedule.csv', index=False)
+
+logging.info(type(df_schedule))
+
+
+# Store into new table (game_schedule_and_past_scores) database
+
