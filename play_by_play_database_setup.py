@@ -1,9 +1,6 @@
-from config import nfl, pd, logging, get_supabase_client, get_current_season
+from config import nfl, pd, logging, get_supabase_client
 
-def setup_data_for_database():
-
-    # Gets current NFL season
-    current_season = get_current_season()
+def setup_data_for_database(current_season):
 
     # Most useful column from massive live play_by_play dataset
     # Cuts down from 300+ to 38
