@@ -1,1 +1,6 @@
 nflreadpy
+streamlit
+pandas
+supabase
+python-dotenv
+requests
