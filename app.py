@@ -81,5 +81,4 @@ date = st.date_input("Whats the date today")
 
 st.write(date)
 
-# Store into new table (game_schedule_and_past_scores) database
 
